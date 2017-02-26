@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+
+import RPi.GPIO as gpio
+import time
+from sys import stdout
+
+gpio.setmode(gpio.BCM)
+
+front_trigger = 23
+front_echo = 24
+
+gpio.setup(front_trigger,gpio.OUT)
+gpio.setup(front_echo,gpio.IN)
+
+#reset
+gpio.output(front_trigger,False)
+time.sleep(2)
+
+gpio.output(front_trigger, True)
+time.sleep(0.0001)
+
+while gpio.input(front_echo) == 0:
+    pulse_start = time.time()
+
+while gpio.input(front_echo) == h1:
+    pulse_end = time.time()
+
+distance = round(17150 * (pulse_end - pulse_start), 2)
+
+stdout.write("Distance: " + distance + '\n')
+
+gpio.cleanup()
+
