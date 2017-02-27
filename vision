@@ -4,15 +4,14 @@ from time import time, sleep
 from sys import stdout
 import threading
 
-
 class Vision:
     def __init__(self,gpio):
         self.front_trigger = 23
         self.front_echo    = 24
-        self.right_trigger = 0
-        self.right_echo    = 0
-        self.left_trigger  = 0
-        self.left_echo     = 0
+        self.right_trigger = -1
+        self.right_echo    = -1
+        self.left_trigger  = -1
+        self.left_echo     = -1
 
         self.front_dist = -1
         self.right_dist = -1
@@ -20,6 +19,7 @@ class Vision:
 
         self.pulse_timeout  = .001
         self.pulse_interval = .5
+        self.no_hit = float("inf")
 
         self.updated = False
 
@@ -40,6 +40,12 @@ class Vision:
     def refresh(self):
         updated = False
         return (self.left_dist, self.front_dist, self.right_dist)
+
+    def pulseall(self):
+        self.front_dist = self.pulse(front_trigger,front_echo)
+        self.right_dist = self.pulse(right_trigger,right_echo)
+        self.left_dist  = self.pulse(left_trigger,left_echo)
+        updated = True
 
     def pulse(self,trig,echo): 
         self.gpio.output(trig, True)
@@ -77,8 +83,16 @@ class Vision:
 
 
 if __name__ == "__main__":
-
     import RPi.GPIO as gpio
     vis = Vision(gpio)
-    stdout.write("distance: " + vis.pulse() + '\n')
-
+    vis.pulseall()
+    (left,front,right) = vis.refresh()
+    stdout.write(
+        """
+         %d
+        +-+
+      %d| |%d
+        +-+
+        """
+        % (front,left,right)
+    )
