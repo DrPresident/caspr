@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+from time import time, sleep
+from sys import stdout
+import threading
+
+
+class Vision:
+    def __init__(self,gpio):
+        self.front_trigger = 23
+        self.front_echo    = 24
+        self.right_trigger = 0
+        self.right_echo    = 0
+        self.left_trigger  = 0
+        self.left_echo     = 0
+
+        self.front_dist = -1
+        self.right_dist = -1
+        self.left_dist  = -1
+
+        self.pulse_timeout  = .001
+        self.pulse_interval = .5
+
+        self.updated = False
+
+        self.gpio = gpio
+        self.gpio.setup(self.front_trigger,self.gpio.OUT)
+        self.gpio.setup(self.front_echo,self.gpio.IN)
+        self.gpio.setup(self.right_trigger,self.gpio.OUT)
+        self.gpio.setup(self.right_trigger,self.gpio.OUT)
+        self.gpio.setup(self.left_echo,self.gpio.IN)
+        self.gpio.setup(self.left_echo,self.gpio.IN)
+
+        #reset
+        self.gpio.output(self.front_trigger,False)
+        self.gpio.output(self.right_trigger,False)
+        self.gpio.output(self.left_trigger,False)
+        sleep(2)
+
+    def refresh(self):
+        updated = False
+        return (self.left_dist, self.front_dist, self.right_dist)
+
+    def pulse(self,trig,echo): 
+        self.gpio.output(trig, True)
+        sleep(0.0001)
+
+        check_start = time()
+
+        while gpio.input(echo) == 0:
+            pulse_start = time()
+            if pulse_start - check_start > pulse_timeout:
+                return -1
+
+        while gpio.input(echo) == 1:
+            pulse_end = time()
+
+        return round(17150 * (pulse_end - pulse_start), 2)
+
+    def run(self):
+        while True:
+            self.front_dist = self.pulse(self.front_trigger, self.front_echo)
+            self.right_dist = self.pulse(self.right_trigger, self.right_echo)
+            self.left_dist  = self.pulse(self.left_trigger, self.left_echo)
+            updated = True
+
+            stdout.write("front: " + self.front_dist + '\n'
+                         "right: " + self.right_dist + '\n'
+                         "left:  " + self.left_dist  + '\n')
+       
+            sleep(self.pulse_interval)
+
+    def start(self):
+        self.daemon = threading.Thread(target=self.run)
+        self.daemon.setDaemon(True)
+        self.daemon.start()
+
+
+if __name__ == "__main__":
+
+    import RPi.GPIO as gpio
+    vis = Vision(gpio)
+    stdout.write("distance: " + vis.pulse() + '\n')
+
