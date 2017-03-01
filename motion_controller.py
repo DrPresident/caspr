@@ -25,7 +25,7 @@ class MotionController:
     def go_subscribe(self,func):
         self.go_listeners.append(func)
     def stop_subscrib(self,func):
-        stop_listeners.append(func):
+        self.stop_listeners.append(func)
 
     def turn_right(self):
         stdout.write("turning right...\n")
@@ -50,10 +50,10 @@ class MotionController:
 
         if abs(deg) > 0:
             sleep(self.sec_per_degree * abs(deg))
-            stop()
+            self.stop()
 
     def go_foot(self,feet):
-        self.go_inch(feet * 12):
+        self.go_inch(feet * 12)
 
     def go_inch(self,inches):
         stdout.write("go ")
