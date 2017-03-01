@@ -3,17 +3,17 @@
 from time import sleep
 from sys import stdout, argv
 
-class Motion:
-    def __init__(self,gpio):
+class MotionController:
+    #pins=(left1,right1,left2,right2...)
+    def __init__(self,gpio,wheel_pins):
 
-        self.right_wheel   = 0
-        self.left_wheel    = 0
-        self.sec_per_inch = .01
-        self.sec_per_degree = .01
+        self.sec_per_inch = 0.5
+        self.wheels = wheel_pins
+        self.time_start = -1
 
         self.gpio = gpio
-        self.gpio.setup(self.right_wheel,self.gpio.OUT)
-        self.gpio.setup(self.left_wheel,self.gpio.OUT)
+        for w in self.wheels:
+            self.gpio.setup(w,self.gpio.OUT)
 
         self.stop()
 
@@ -30,8 +30,10 @@ class Motion:
         self.rotate(180)
 
     def rotate(self, deg=0):
-        self.gpio.output(self.right_wheel, (deg < 0))
-        self.gpio.output(self.left_wheel, (deg > 0))
+        for w in range(0,len(self.wheels),2):
+            self.gpio.output(self.left_wheel, (deg > 0))
+        for w in range(1,len(self.wheels),2):
+            self.gpio.output(w, (deg < 0))
 
         if abs(deg) > 0:
             sleep(self.sec_per_degree * abs(deg))
@@ -45,24 +47,28 @@ class Motion:
         if inches > 12: 
             stdout.write(inches / 12 + "'")
         stdout.write(inches % 12 + "\"\n")
+
         self.go()
-        sleep(self.sec_per_inch * inches)
-        self.stop()
+        if inches:
+            sleep(inches * self.sec_per_inch)
+            self.stop()
 
     def go(self):
-        self.gpio.output(self.right_wheel,True)
-        self.gpio.output(self.left_wheel,True)
+        self.time_start = time()
+        for x in self.wheels:
+            self.gpio.output(w,True)
 
     def stop(self):
         stdout.write("stopping...\n")
-        self.gpio.output(self.right_wheel,False)
-        self.gpio.output(self.left_wheel,False)
+        for x in self.wheels:
+            self.gpio.output(w,False)
+        self.distance = (time() - self.time_start) * self.sec_per_inch
 
 #run tests for calibration
 if __name__ == "__main__":
     import RPi.GPIO as gpio
     motion = Motion(gpio)
-    stdout.write("going forward 1ft)" + motion.sec_per_inch * 12 + "s")
+    stdout.write("going forward 1ft, " + motion.sec_per_inch * 12 + "s")
     for r in range(-360, 360, 90):
         stdout.write("rotating " + r + " degrees in " + motion.sec_per_degree + "s")
         motion.rotate(rotation)

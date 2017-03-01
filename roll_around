@@ -2,13 +2,13 @@
 
 import RPi.GPIO as gpio
 from time import sleep
-from vision import Vision
-from motion import Motion
+from vision_controller import VisionController
+from motion_controller import MotionController
 
 GPIO.setmode(gpio.BCM)
 
-vision_controller = Vision(gpio)
-motion_controller = Motion(gpio)
+front_vision = VisionController(gpio,0,0)
+motion = MotionController(gpio,0,0)
 
 vision_controller.start()
 
@@ -17,26 +17,26 @@ look_for_turn = 50
 
 while True:
 
-    if vision_controller.updated:
-        (left_dist, front_dist, right_dist) = vision_controller.refresh()
+    if front_vision.updated:
+        front_dist = front_vision.refresh()
 
         if front_dist > too_close:
-            motion_controller.go()
+            motion.go()
         
         #turn around if nowhere to go
         if front_dist < look_for_turn:
 
             if front_dist < too_close:
-                motion_controller.stop()
+                motion.stop()
 
             if right_dist > front_dist or left_dist > front_dist:
                 if right_dist > left_dist:
-                    motion_controller.turn_right()
+                    motion.turn_right()
                 elif right_dist < left_dist:
-                    motion_controller.turn_left()
+                    motion.turn_left()
 
             elif front_dist < too_close:
-                motion_controller.turn_around()
+                motion.turn_around()
 
 stdout.write("All done!\n")
 gpio.cleanup()

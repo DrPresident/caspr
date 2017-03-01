@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+class Tracker:
+    def __init__(self,rotation=0,location=(0,0)):
+        self.rotation = rotation
+        self.location = location
+        self.moving = False
+
+    def rotate(self,deg):
+        self.rotation += abs(deg)
+    
+    def visualize(self):
+        
+        
