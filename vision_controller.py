@@ -18,12 +18,8 @@ class Vision:
         self.updated = False
 
         self.gpio = gpio
-        self.gpio.setup(self.front_trigger,self.gpio.OUT)
-        self.gpio.setup(self.front_echo,self.gpio.IN)
-        self.gpio.setup(self.right_trigger,self.gpio.OUT)
-        self.gpio.setup(self.right_trigger,self.gpio.OUT)
-        self.gpio.setup(self.left_echo,self.gpio.IN)
-        self.gpio.setup(self.left_echo,self.gpio.IN)
+        self.gpio.setup(self.trigger,self.gpio.OUT)
+        self.gpio.setup(self.echo,self.gpio.IN)
 
         self.gpio.output(self.trigger,False)
         sleep(1)
@@ -64,10 +60,13 @@ class Vision:
 #./vision_controller trigger_pin echo_pin
 if __name__ == "__main__":
     import RPi.GPIO as gpio
-    from sys import argv
-    if(len(argv) >= 2):
-        
-    vis = Vision(gpio, argv[0], argv[1])
+    from sys import argv, exit
+
+    if len(argv) < 2:
+        print "need args <trigger> <echo>"
+        exit(1)
+
+    vis = Vision(gpio, int(argv[0]), int(argv[1]))
     vis.pulse()
     while not vis.updated:
         continue

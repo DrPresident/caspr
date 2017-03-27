@@ -1,9 +1,9 @@
-#!./bin/python
+#!/usr/bin/python
 
 from time import sleep
 from sys import stdout, argv
 
-class MotionController:
+class Motion:
     #pins=(left1,right1,left2,right2...)
     def __init__(self,gpio,wheel_pins):
 
@@ -24,7 +24,7 @@ class MotionController:
         self.rotate_listeners.append(func)
     def go_subscribe(self,func):
         self.go_listeners.append(func)
-    def stop_subscrib(self,func):
+    def stop_subscribe(self,func):
         self.stop_listeners.append(func)
 
     def turn_right(self):

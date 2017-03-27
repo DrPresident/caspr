@@ -2,12 +2,12 @@
 
 import RPi.GPIO as gpio
 from time import sleep
-from vision_controller import VisionController
-from motion_controller import MotionController
+from vision_controller import Vision
+from motion_controller import Motion
 
-GPIO.setmode(gpio.BCM)
+gpio.setmode(gpio.BCM)
 
-front_vision = VisionController(gpio,0,0)
+front_vision = Vision(gpio,0,0)
 motion = MotionController(gpio,0,0)
 
 vision_controller.start()
