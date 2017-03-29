@@ -38,11 +38,15 @@ def back():
 	io.output(19,True)
 	io.output(26,False)
 
-def forward():
+def forward(t=0):
 	io.output(21,False)
 	io.output(20,True)
 	io.output(19,False)
 	io.output(26,True)
+        if t > 0:
+            sleep(t)
+            stop()
+
 
 def stop():
 	io.output(21,False)
