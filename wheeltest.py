@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import RPi.GPIO as io
 from time import sleep
 
@@ -23,8 +25,12 @@ def rotate_right():
 def rotate(deg):
     if deg > 0:
         rotate_right()
-        sleep(1 * (deg / 90.))
-        stop()
+        sleep(1 * (deg / 360.))
+    elif deg < 0:
+        rotate_left()
+        sleep(1 * (abs(deg) / 360.))
+    stop()
+
 
 def back():
 	io.output(21,True)
@@ -43,4 +49,27 @@ def stop():
 	io.output(20,False)
 	io.output(19,False)
 	io.output(26,False)
+
+def demo():
+    try:
+        print "forward"
+        forward()
+        sleep(1)
+        print "back"
+        back()
+        sleep(1)
+        print "turn around"
+        rotate(180)
+        print "forward"
+        forward()
+        sleep(1)
+        print "back"
+        back()
+        sleep(1)
+        print "turn back around"
+        rotate(-180)
+        stop()
+    except Error as e:
+        print e
+        stop()
 
