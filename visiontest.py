@@ -11,6 +11,13 @@ echo = 24
 io.setup(trig,io.OUT)
 io.setup(echo,io.IN)
 
+def avgpulse(p):
+    sum = 0.
+    for i in xrange(p):
+        sum += pulse()
+
+    return sum / p
+
 def pulse():
     io.output(trig,1)
     sleep(0.0001)
