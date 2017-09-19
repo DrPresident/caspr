@@ -1,0 +1,16 @@
+#!/usr/bin/python
+
+import pygame
+from pygame import draw, display, FULLSCREEN
+from time import sleep
+
+pygame.init()
+display.init()
+
+window = display.set_mode((1280, 720))
+
+font = pygame.font.SysFont("FreeSans", 15)
+distance_label = font.render("--.--cm", 1, (255, 25, 0))
+screen.blit(distance_label, (100, 100))
+
+sleep(2)

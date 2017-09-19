@@ -1,10 +1,8 @@
-#!./bin/python
-from pygame import draw,display
+#!/usr/bin/python
+from pygame import draw,display,FULLSCREEN
 from pygame.locals import *
 from time import sleep
 from math import sin,cos,radians
-#switch from pygame
-#import pyglet
 
 class Tracker:
     def __init__(self,motion_controller=None,rotation=0,location=(0,0)):
@@ -46,7 +44,7 @@ class Tracker:
         self.update_speed()
 
     def show_rotation(self):
-        self.compass_window = display.set_mode((self.compass_width, self.compass_height))
+        self.compass_window = display.set_mode((720,480),FULLSCREEN) 
         self.update_rotation()
 
     def update_path(self):

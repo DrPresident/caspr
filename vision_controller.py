@@ -11,7 +11,7 @@ class Vision:
 
         self.dist = -1
 
-        self.pulse_timeout  = .001
+        self.pulse_timeout  = .1 
         self.pulse_interval = .5
         self.no_hit = float("inf")
 
@@ -29,20 +29,23 @@ class Vision:
         return self.dist
 
     def pulse(self):
-        self.gpio.output(trigger, True)
+        self.gpio.output(self.trigger, True)
         sleep(0.0001)
+        self.gpio.output(self.trigger, False)
 
         check_start = time()
 
-        while gpio.input(echo) == 0:
+        while gpio.input(self.echo) == 0:
             pulse_start = time()
-            if pulse_start - check_start > pulse_timeout:
+            if pulse_start - check_start > self.pulse_timeout:
                 return -1
 
-        while gpio.input(echo) == 1:
+        while gpio.input(self.echo) == 1:
             pulse_end = time()
+            if pulse_end - pulse_start > self.pulse_timeout:
+                return -1
 
-        return round(17150 * (pulse_end - pulse_start), 2)
+        return 17150 * (pulse_end - pulse_start)
 
     def run(self):
         while True:
@@ -57,19 +60,13 @@ class Vision:
         self.daemon.start()
 
 
-#./vision_controller trigger_pin echo_pin
 if __name__ == "__main__":
     import RPi.GPIO as gpio
-    from sys import argv, exit
 
-    if len(argv) < 2:
-        print "need args <trigger> <echo>"
-        exit(1)
+    gpio.setmode(gpio.BCM)
+    vis = Vision(gpio, 17, 4)
 
-    vis = Vision(gpio, int(argv[0]), int(argv[1]))
-    vis.pulse()
-    while not vis.updated:
-        continue
-    dist = vis.refresh()
-    stdout.write("distance: " + vis.refresh())
+    while True:
+        print round(vis.pulse(), 2)
+        sleep(1)
 
