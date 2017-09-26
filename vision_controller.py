@@ -22,35 +22,50 @@ class Vision:
         self.gpio.setup(self.echo,self.gpio.IN)
 
         self.gpio.output(self.trigger,False)
-        sleep(1)
+
+        self.on_pulse = list()
+        self.on_update = list()
 
     def refresh(self):
         updated = False
         return self.dist
 
     def pulse(self):
+        for f in self.on_pulse:
+            f(self)
+
         self.gpio.output(self.trigger, True)
         sleep(0.0001)
         self.gpio.output(self.trigger, False)
+        pulse_start = -1
+        pulse_end = -1
+        timeout = False
 
         check_start = time()
 
-        while gpio.input(self.echo) == 0:
+        while self.gpio.input(self.echo) == 0 and not timeout:
             pulse_start = time()
             if pulse_start - check_start > self.pulse_timeout:
-                return -1
+                timeout = True
 
-        while gpio.input(self.echo) == 1:
+        while self.gpio.input(self.echo) == 1 and not timeout:
             pulse_end = time()
             if pulse_end - pulse_start > self.pulse_timeout:
-                return -1
+                timeout = True
 
-        return 17150 * (pulse_end - pulse_start)
+        if timeout:
+            self.dist = -1
+        else:
+            self.dist = 17150 * (pulse_end - pulse_start)
+        updated = True
+        for f in self.on_update:
+            f(self)
+
+        return self.dist
 
     def run(self):
         while True:
-            self.dist = self.pulse(self.trigger, self.echo)
-            updated = True
+            self.dist = self.pulse()
 
             sleep(self.pulse_interval)
 
@@ -64,9 +79,11 @@ if __name__ == "__main__":
     import RPi.GPIO as gpio
 
     gpio.setmode(gpio.BCM)
-    vis = Vision(gpio, 17, 4)
+    left = Vision(gpio, 22, 27)
+    center = Vision(gpio, 17, 4)
+    right = Vision(gpio, 9, 10)
 
     while True:
-        print round(vis.pulse(), 2)
+        print round(left.pulse(), 2), round(center.pulse(), 2), round(right.pulse(), 2)
         sleep(1)
 

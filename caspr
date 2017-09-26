@@ -1,16 +1,29 @@
 #!/usr/bin/python
 
-import pygame
-from pygame import draw, display, FULLSCREEN
+import RPi.GPIO as gpio
+
 from time import sleep
+from getch import getch
 
-pygame.init()
-display.init()
+from display import Display
+from vision_controller import Vision
+from motion_controller import Motion
 
-window = display.set_mode((1280, 720))
+gpio.setmode(gpio.BCM)
 
-font = pygame.font.SysFont("FreeSans", 15)
-distance_label = font.render("--.--cm", 1, (255, 25, 0))
-screen.blit(distance_label, (100, 100))
+display = Display()
+display.intro_anim()
 
-sleep(2)
+center_vis = Vision(gpio, 17, 4)
+
+display.center_vision(center_vis)
+
+center_vis.pulse()
+center_vis.run()
+
+c = getch()
+while c != 'q':
+    print c
+
+gpio.cleanup()
+oled.onoff(0)
