@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cp -r ../caspr /etc/
+
+# run intro on caspr display at startup
+# echo "#!/bin/bash" > /etc/init.d/caspr_display
+# echo "/etc/caspr/display.py" >> /etc/init.d/caspr_display
+# runlevel 3
+# ln -s /etc/init.d/caspr_display /etc/rc3.d/caspr_display

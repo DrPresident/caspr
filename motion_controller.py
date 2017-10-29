@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from time import sleep, time
-from sys import stdout, argv
+from sys import stdout, stdin, argv
 from getch import getch
 
 class Motion:
@@ -50,7 +50,6 @@ class Motion:
             self.stop()
 
     def forward(self):
-        print "forward!"
         self.time_start = time()
         self.stopped = False
         self.gpio.output(self.left[0], False)
@@ -59,7 +58,6 @@ class Motion:
         self.gpio.output(self.right[1], True)
 
     def back(self):
-        print "back..."
         self.time_start = time()
 
         self.stopped = False
@@ -69,8 +67,6 @@ class Motion:
         self.gpio.output(self.right[1], False)
 
     def stop(self):
-        print "stop!"
-
         self.gpio.output(self.left[0], False)
         self.gpio.output(self.left[1], False)
         self.gpio.output(self.right[0], False)
@@ -85,20 +81,11 @@ if __name__ == "__main__":
 
     gpio.setmode(gpio.BCM)
     motion = Motion(gpio, (13, 6), (26, 19))
+    
+    motion.forward()
+    sleep(3)
+    motion.back()
+    sleep(3)
+    motion.stop()
 
-    print "Caspr Motion Test"
-
-    while True:
-        c = getch()
-        if c == ',':
-            motion.forward()
-        elif c == 'a':
-            motion.rotate_left()
-        elif c == 'e':
-            motion.rotate_right()
-        elif c == 'o':
-            if motion.stopped:
-                motion.back()
-            else:
-                motion.stop()
 

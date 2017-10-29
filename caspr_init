@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "INITIALIZING CASPR"
+echo "#!/bin/bash" > /etc/init.d/caspr_display
+echo "/etc/caspr/display.py" >> /etc/init.d/caspr_display
+ln -s /etc/init.d/caspr_display /etc/rc3.d/caspr_display

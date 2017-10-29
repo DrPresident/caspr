@@ -3,27 +3,133 @@
 import RPi.GPIO as gpio
 
 from time import sleep
-from getch import getch
 
 from display import Display
 from vision_controller import Vision
 from motion_controller import Motion
+from motor_controller import Motor
+from sys import stdin, argv, exit
+from signal import signal
+from socket import *
+from threading import Thread
+#from curses import *
+from getch import getch
 
+# setup
 gpio.setmode(gpio.BCM)
 
 display = Display()
 display.intro_anim()
 
+"""
 center_vis = Vision(gpio, 17, 4)
-
 display.center_vision(center_vis)
+center_vis.start()
 
-center_vis.pulse()
-center_vis.run()
+left_vis = Vision(gpio, 22, 27)
+display.left_vision(left_vis)
+left_vis.run()
 
-c = getch()
-while c != 'q':
-    print c
+right_vis = Vision(gpio, 9, 10)
+display.right_vision(right_vis)
+right_vis.run()
+"""
 
-gpio.cleanup()
-oled.onoff(0)
+motion = Motion(gpio, (13, 6), (26, 19))
+# left_motor = Motor(gpio, (13, 6), 100)
+# right_motor = Motor(gpio, (26, 19), 50)
+
+def cleanup(sig, frame):
+    print "cleaning up!"
+    gpio.cleanup()
+    exit(0)
+
+signal(2, cleanup)
+
+def control_input(key):
+    # TODO: arrow keys
+    if key == ',' or key == 'w':
+        print 'forward!'
+        #motion.forward()
+        left_motor.forward()
+        right_motor.forward()
+    elif key == 'a': 
+        print 'turning left'
+        #motion.rotate_left()
+    elif key == 'o' or key == 's':
+        if left_motor.motion is None and right_motor.motion is None:
+            print 'back it up'
+            #motion.back()
+            left_motor.reverse()
+            right_motor.reverse()
+        else:
+            print 'stop'
+            #motion.stop()
+            left_motor.stop()
+            right_motor.stop()
+
+    elif key == 'e' or key == 'd':
+        print 'turning right'
+        motion.rotate_right()
+    elif key == 'm':
+        print 'motor control'
+
+    elif key == KEY_UP:
+        print 'uparrow'
+    elif key == KEY_DOWN:
+        print 'downarrow'
+    elif key == KEY_LEFT:
+        print 'leftarrow'
+    elif key == KEY_RIGHT:
+        print 'rightarrow'
+
+
+if len(argv) < 2 or argv[1] == '-l':
+    print "You're the driver!"
+    """
+    screen = initscr()
+    screen.keypad(True)
+    noecho()
+    cbreak()
+    """
+
+    c = 'true'
+    while c:
+        c = getch() #screen.getch()
+        control_input(c)
+
+    """
+    echo()
+    nocbreak()
+    endwin()
+    """
+
+
+elif argv[1] == '-r':
+    print "Remote driving enabled"
+    sock = socket(AF_INET, SOCK_STREAM)
+
+    print sock
+    sock.bind(('0.0.0.0', 6969))
+    print 'bound'
+    sock.listen(1)
+    print 'started listening'
+
+    (rsock, addr) = sock.accept()
+    print "Connected: ", addr
+
+    try:
+        while True:
+            c = rsock.recv(1)
+            if c:
+                control_input(c)
+            else:
+                print addr, 'disconnected'
+                break
+
+    finally:
+        sock.close()
+
+else:
+    print "Bad Args:", argv[1:]
+

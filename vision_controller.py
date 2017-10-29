@@ -66,7 +66,6 @@ class Vision:
     def run(self):
         while True:
             self.dist = self.pulse()
-
             sleep(self.pulse_interval)
 
     def start(self):
