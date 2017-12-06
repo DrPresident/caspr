@@ -70,14 +70,18 @@ if __name__ == "__main__":
 
     gpio.setmode(gpio.BCM)
     left_motor = Motor(gpio, (13, 6), 0)
-    motor.forward()
+    right_motor = Motor(gpio, (26, 19), 0)
+    left_motor.forward()
+    right_motor.forward()
 
     for s in xrange(10, 100, 10):
-        motor.set_speed(s)
+        left_motor.set_speed(s)
+        right_motor.set_speed(s)
         print "speed:",s 
         sleep(1)
     for s in xrange(100, 10, -10):
-        motor.set_speed(s)
+        left_motor.set_speed(s)
+        right_motor.set_speed(s)
         print "speed:",s 
         sleep(1)
 

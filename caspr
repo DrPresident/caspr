@@ -4,22 +4,27 @@ import RPi.GPIO as gpio
 
 from time import sleep
 
-from display import Display
+# from display import Display
 from vision_controller import Vision
 from motion_controller import Motion
 from motor_controller import Motor
+from servo_controller import Servo
+from camera import Camera
+
 from sys import stdin, argv, exit
 from signal import signal
 from socket import *
 from threading import Thread
-#from curses import *
+from curses import *
 from getch import getch
 
 # setup
 gpio.setmode(gpio.BCM)
 
+"""
 display = Display()
 display.intro_anim()
+"""
 
 """
 center_vis = Vision(gpio, 17, 4)
@@ -35,9 +40,16 @@ display.right_vision(right_vis)
 right_vis.run()
 """
 
-motion = Motion(gpio, (13, 6), (26, 19))
-# left_motor = Motor(gpio, (13, 6), 100)
-# right_motor = Motor(gpio, (26, 19), 50)
+# motion = Motion(gpio, (13, 6), (26, 19))
+right_motor = Motor(gpio, (13, 6), 100)
+left_motor = Motor(gpio, (26, 19), 100)
+
+servo = Servo(gpio, 18)
+
+"""
+camera = Camera(fps=10)
+camera.start()
+"""
 
 def cleanup(sig, frame):
     print "cleaning up!"
@@ -56,6 +68,8 @@ def control_input(key):
     elif key == 'a': 
         print 'turning left'
         #motion.rotate_left()
+        left_motor.reverse()
+        right_motor.forward()
     elif key == 'o' or key == 's':
         if left_motor.motion is None and right_motor.motion is None:
             print 'back it up'
@@ -70,7 +84,9 @@ def control_input(key):
 
     elif key == 'e' or key == 'd':
         print 'turning right'
-        motion.rotate_right()
+        # motion.rotate_right()
+        left_motor.forward()
+        right_motor.reverse()
     elif key == 'm':
         print 'motor control'
 
@@ -82,6 +98,20 @@ def control_input(key):
         print 'leftarrow'
     elif key == KEY_RIGHT:
         print 'rightarrow'
+
+    elif key == 'l':
+        servo.rotate_down()
+    elif key == 'L':
+        servo.rotate_up()
+    
+    elif key == 'S':
+        servo.set_rotation(0)
+        sleep(1)
+        servo.set_rotation(15)
+        sleep(1)
+        servo.set_rotation(30)
+        sleep(1)
+
 
 
 if len(argv) < 2 or argv[1] == '-l':
@@ -108,6 +138,7 @@ if len(argv) < 2 or argv[1] == '-l':
 elif argv[1] == '-r':
     print "Remote driving enabled"
     sock = socket(AF_INET, SOCK_STREAM)
+    sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
     print sock
     sock.bind(('0.0.0.0', 6969))
@@ -115,18 +146,22 @@ elif argv[1] == '-r':
     sock.listen(1)
     print 'started listening'
 
-    (rsock, addr) = sock.accept()
-    print "Connected: ", addr
-
     try:
         while True:
-            c = rsock.recv(1)
-            if c:
-                control_input(c)
-            else:
-                print addr, 'disconnected'
-                break
+            (rsock, addr) = sock.accept()
+            print "Connected: ", addr
 
+            try:
+                while True:
+                    c = rsock.recv(1)
+                    if c:
+                        control_input(c)
+                    else:
+                        print addr, 'disconnected'
+                        break
+
+            finally:
+                rsock.close()
     finally:
         sock.close()
 

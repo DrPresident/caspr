@@ -82,10 +82,13 @@ if __name__ == "__main__":
     gpio.setmode(gpio.BCM)
     motion = Motion(gpio, (13, 6), (26, 19))
     
+    print "forward"
     motion.forward()
-    sleep(3)
-    motion.back()
-    sleep(3)
+    sleep(10)
+    while True:
+        pass
+    print "stop"
     motion.stop()
+
 
 
