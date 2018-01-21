@@ -39,6 +39,31 @@ right_vis = Vision(gpio, 9, 10)
 display.right_vision(right_vis)
 right_vis.run()
 """
+def scan(step = 45):
+    r = 180
+    results = []
+    for r in xrange(180, 0, 45)
+        servo.set_rotation(r)
+        results += radar.avg_pulse()
+
+    return results
+"""
+    # look left
+    servo.set_rotation(180)
+    left = radar.avg_pulse()
+
+    # look forward
+    servo.set_rotation(90)
+    front = radar.avg_pulse()
+
+    # look right
+    servo.set_rotation(0)
+    right = radar.avg_pulse()
+
+    return (left, front, right)
+"""
+
+radar = Vision(gpio, 17, 4)
 
 # motion = Motion(gpio, (13, 6), (26, 19))
 right_motor = Motor(gpio, (13, 6), 100)
@@ -58,6 +83,8 @@ def cleanup(sig, frame):
 
 signal(2, cleanup)
 
+# returns the response data to be sent back to report results
+# <data_type><data>
 def control_input(key):
     # TODO: arrow keys
     if key == ',' or key == 'w':
@@ -99,22 +126,46 @@ def control_input(key):
     elif key == KEY_RIGHT:
         print 'rightarrow'
 
+    # Camera Controls
     elif key == 'l':
         servo.rotate_down()
+        return servo.rot
     elif key == 'L':
         servo.rotate_up()
-    
+        return servo.rot
+    # Radar  
+    # Thorough Pulse
+    elif key == 'P':
+        dist = radar.avg_pulse()
+        print dist, 'cm'
+        return dist
+    # Quick Pulse
+    elif key == 'p':
+        dist = radar.pulse()
+        print dist, 'cm'
+        return dist
+
+    # Thorough Scan
     elif key == 'S':
+        print ' '.join(scan())
+
+
+    """
+    # Quick Scan
+    elif key == 'S':
+        # look left
+        servo.set_rotation(180)
+        print 'left:', radar.pulse(), 'cm'
+        # look forward
+        servo.set_rotation(90)
+        print 'front:', radar.pulse(), 'cm'
+        # look right
         servo.set_rotation(0)
-        sleep(1)
-        servo.set_rotation(15)
-        sleep(1)
-        servo.set_rotation(30)
-        sleep(1)
+        print 'right:', radar.pulse(), 'cm'
+    """
 
 
-
-if len(argv) < 2 or argv[1] == '-l':
+if len(argv) < 2 or argv[1] == '-l' or argv[1] == '--local':
     print "You're the driver!"
     """
     screen = initscr()
@@ -135,7 +186,7 @@ if len(argv) < 2 or argv[1] == '-l':
     """
 
 
-elif argv[1] == '-r':
+elif argv[1] == '-r' or argv[1] == -- 'remote':
     print "Remote driving enabled"
     sock = socket(AF_INET, SOCK_STREAM)
     sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -168,3 +219,35 @@ elif argv[1] == '-r':
 else:
     print "Bad Args:", argv[1:]
 
+
+elif argv[1] == '-a' or argv[1] == '--auto': 
+    # distances in cm
+    too_close = 30
+
+    # times in ms
+    pulse_timer = 10
+
+    servo.set_rotation(90)
+
+    while True:
+        distance = radar.avg_pulse()
+
+        if distance <= too_close:
+            paths = radar.scan()
+            if paths[0] > paths[1]:
+                # turn_left
+            else:
+                # turn_right
+
+        left_motor.forward()
+        right_motor.forward()
+
+
+elif argv[1] == '-e' or argv[1] == '--explore':
+    map_size = 1024
+    # unit size in cm
+    map_unit = 10
+    location = ( map_size / 2, map_size / 2 )
+
+else:
+    print 'bad arguments:', ''.join(argv[1:])

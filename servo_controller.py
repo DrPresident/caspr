@@ -15,17 +15,23 @@ class Servo:
 
         self.rot = 0
         self.pwm.start(self.rot)
+        self.duty = 0
+        self.set_rotation(90)
+
+    def __del__(self):
+        self.pwm.stop()
 
     def set_rotation(self, rotation):
         self.rot = min(max(rotation, 0.0), 180.0)
         print 'Rotation:', self.rot
-        # normalize 180 degrees to a 0-20 duty cycle
+        # normalize 180 degrees to a 0-20ms duty cycle
         duty = self.rot / 180.0 * 20.0 + 1
         print 'Duty:', duty
 
         # rotate asynchronously
         self._set_duty(duty)
-        sleep(.3)
+        sleep(.1 * abs(self.duty - duty) / 2)
+        self.duty = duty
         self._idle()
         # Thread(target=rotate).start()
     
@@ -47,16 +53,12 @@ if __name__ == '__main__':
 
     gpio.setmode(gpio.BCM)
     servo = Servo(gpio, 18)
+
     servo.set_rotation(0)
 
     for pulse in xrange(0, 12):
         servo.rotate_up()
 
-    """
-    delay = .1
-    for rot in xrange(0, 180, 1):
-        print 'setting rotation', rot
-        servo.set_rotation(rot)
-        sleep(delay)
-    """
+    servo.set_rotation(90)
+
     gpio.cleanup()

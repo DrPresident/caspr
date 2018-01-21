@@ -26,9 +26,13 @@ class Vision:
         self.on_pulse = list()
         self.on_update = list()
 
+    # force fresh data
     def refresh(self):
         updated = False
-        return self.dist
+        return self.pulse()
+
+    def avg_pulse(self, n=3):
+        return sum(self.pulse() for p in xrange(n)) / n
 
     def pulse(self):
         for f in self.on_pulse:
