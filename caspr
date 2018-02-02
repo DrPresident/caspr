@@ -18,6 +18,9 @@ from threading import Thread
 from curses import *
 from getch import getch
 
+from math import sin, cos
+from mapper import Mapper
+
 # setup
 gpio.setmode(gpio.BCM)
 
@@ -42,11 +45,12 @@ right_vis.run()
 def scan(step = 45):
     r = 180
     results = []
-    for r in xrange(180, 0, 45)
+    for r in xrange(180, 0, -step):
         servo.set_rotation(r)
-        results += radar.avg_pulse()
+        results += [ radar.avg_pulse() ]
 
     return results
+
 """
     # look left
     servo.set_rotation(180)
@@ -186,7 +190,7 @@ if len(argv) < 2 or argv[1] == '-l' or argv[1] == '--local':
     """
 
 
-elif argv[1] == '-r' or argv[1] == -- 'remote':
+elif argv[1] == '-r' or argv[1] == '--remote':
     print "Remote driving enabled"
     sock = socket(AF_INET, SOCK_STREAM)
     sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -216,10 +220,6 @@ elif argv[1] == '-r' or argv[1] == -- 'remote':
     finally:
         sock.close()
 
-else:
-    print "Bad Args:", argv[1:]
-
-
 elif argv[1] == '-a' or argv[1] == '--auto': 
     # distances in cm
     too_close = 30
@@ -236,12 +236,13 @@ elif argv[1] == '-a' or argv[1] == '--auto':
             paths = radar.scan()
             if paths[0] > paths[1]:
                 # turn_left
+                pass
             else:
                 # turn_right
+                pass
 
         left_motor.forward()
         right_motor.forward()
-
 
 elif argv[1] == '-e' or argv[1] == '--explore':
     map_size = 1024
@@ -249,5 +250,28 @@ elif argv[1] == '-e' or argv[1] == '--explore':
     map_unit = 10
     location = ( map_size / 2, map_size / 2 )
 
+elif argv[1] == '-m' or argv[1] == '--mapper':
+
+
+    # degrees
+    scan_step = 5
+
+    print "scanning"
+    # tuple of ping distances
+    results = scan(scan_step)
+    print "scan complete", results
+    print "init mapper",
+    mapper = Mapper()
+    print "done"
+
+    for r in xrange(len(results)):
+        d = results[r]
+        r = scan_step * r
+
+        print r, 'degrees', d, 'cm'
+        x = d * cos(r)
+        y = d * sin(r)
+        print '(x,y)', (x,y)
+
 else:
-    print 'bad arguments:', ''.join(argv[1:])
+    print 'bad arguments:', ','.join(argv[1:])
